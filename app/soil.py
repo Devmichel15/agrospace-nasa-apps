@@ -9,7 +9,7 @@ from app.weather import get_farm_with_coords
 
 router = APIRouter(prefix="/api/farms", tags=["soil"])
 
-SOILGRIDS_URL = "https://rest.isric.org/soilgrids/v2.0/properties/query"
+SOILGRIDS_URL = "10.137.188.54:80"
 
 # Soil does not change fast, and SoilGrids limits calls (about 5 per minute),
 # so we remember results per location.
