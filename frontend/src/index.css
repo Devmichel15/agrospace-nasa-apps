@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme {
+  /* Fontes */
+  --font-display: 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Paleta Premium AgTech 2.0 */
+  --color-forest: #173F30;
+  --color-deep-green: #102F24;
+  --color-primary: #258653;
+  --color-fresh-green: #72A77B;
+  --color-lime-accent: #B7D99A;
+  --color-warm-bg: #F6F7F1;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #17251E;
+  --color-text-secondary: #748078;
+  --color-border: #E5EAE4;
+  --color-warning: #E9A23B;
+  --color-danger: #D95B50;
+  --color-success: #258653;
+  
+  /* Estados semânticos */
+  --color-status-green: #258653;
+  --color-status-yellow: #E9A23B;
+  --color-status-red: #D95B50;
+  --color-status-gray: #748078;
+  
+  /* Tags de origem */
+  --color-tag-sensor-bg: rgba(37, 134, 83, 0.08);
+  --color-tag-sensor-text: #258653;
+  --color-tag-observado-bg: rgba(116, 128, 120, 0.08);
+  --color-tag-observado-text: #5F6B61;
+  --color-tag-previsao-bg: rgba(233, 162, 59, 0.12);
+  --color-tag-previsao-text: #B87518;
+  --color-tag-estimado-bg: rgba(183, 217, 154, 0.25);
+  --color-tag-estimado-text: #4A6B3A;
+}
+
+* {
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body { 
+  @apply font-body bg-[var(--color-warm-bg)] text-[var(--color-text-primary)] antialiased;
+  line-height: 1.7;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-display font-semibold tracking-tight;
+  line-height: 1.15;
+}
+
+/* Scrollbar sutil */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(116, 128, 120, 0.25);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(116, 128, 120, 0.4);
+}

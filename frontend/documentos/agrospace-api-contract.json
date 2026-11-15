@@ -1,0 +1,507 @@
+{
+  "meta": {
+    "project": "AgroSpace",
+    "document": "Contrato base front/back (rascunho)",
+    "version": "0.1.0",
+    "status": "rascunho - sujeito a alteracoes",
+    "language_of_messages": "pt-AO",
+    "purpose": "Descrever o que o front-end precisa de receber do back-end e como os dois se ligam. O front NAO consome a API da NASA nem os sensores directamente: tudo passa pelo back."
+  },
+
+  "conventions": {
+    "base_url": "https://api.agrospace.example/v1",
+    "format": "JSON, UTF-8",
+    "auth": "Authorization: Bearer <access_token> (JWT) em todas as rotas, excepto /auth/*",
+    "timestamps": "ISO 8601 em UTC, ex.: 2026-10-13T08:00:00Z (o front converte para Africa/Luanda)",
+    "units": "SI: mm, C, %, ha, km. A unidade vem sempre num campo 'unit'",
+    "status_enum": {
+      "good": "verde - tudo bem",
+      "attention": "amarelo - atencao",
+      "danger": "vermelho - perigo / accao imediata"
+    },
+    "error_format": {
+      "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Mensagem curta em portugues, pronta para mostrar ao utilizador",
+        "fields": { "email": "Email invalido" }
+      }
+    },
+    "pagination": "?page=1&limit=20 -> { data: [], page, limit, total }",
+    "caching_hint": "Respostas de dashboard/reports/calendar devem trazer 'generated_at' para o front mostrar 'actualizado ha X' e funcionar com internet fraca (cache local)."
+  },
+
+  "architecture": {
+    "layers": [
+      {
+        "id": "terra",
+        "name": "Fontes da Terra",
+        "description": "Sensores instalados na fazenda (hardware do grupo)",
+        "measures": ["soil_moisture", "soil_temperature", "soil_ph", "air_humidity"]
+      },
+      {
+        "id": "ceu",
+        "name": "Fontes do Ceu",
+        "description": "Dados de satelite e clima (responsabilidade do back)",
+        "sources": ["NASA POWER", "GPM", "SMAP", "imagens de satelite", "historico de ~20 anos"],
+        "note": "Previsao de 7-15 dias: confirmar fonte (as APIs da NASA acima sao sobretudo observacoes/historico)."
+      },
+      {
+        "id": "inteligencia",
+        "name": "Camada de interpretacao",
+        "description": "Transforma dados brutos em estado + rotulo + mensagem + recomendacao em portugues simples (regras + IA).",
+        "ai_provider": {
+          "name": "Hugging Face (API de inferencia)",
+          "status": "proposta - a confirmar com o grupo",
+          "used_for": [
+            "Redigir mensagens e recomendacoes em portugues simples a partir dos dados ja classificados",
+            "Assistente que responde a perguntas do produtor sobre a sua fazenda (ver endpoint 'assistant_message')"
+          ],
+          "rules": [
+            "A chamada a Hugging Face e feita SO pelo back-end. O token nunca vai para o front.",
+            "O estado (good/attention/danger) vem de regras deterministicas; a IA so redige o texto.",
+            "Se a API falhar ou demorar, o back usa mensagens-modelo pre-definidas (fallback) para o dashboard nunca ficar vazio."
+          ]
+        }
+      },
+      {
+        "id": "plataforma",
+        "name": "Plataforma (front-end)",
+        "description": "Cadastro, onboarding, dashboard, relatorios, calendario, perfil."
+      }
+    ],
+    "flow": "Sensores + NASA/previsao -> back-end (ingestao, historico) -> interpretacao -> API REST -> front-end"
+  },
+
+  "endpoints": [
+    {
+      "id": "auth_register",
+      "mvp": true,
+      "method": "POST",
+      "path": "/auth/register",
+      "description": "Cadastro com nome, email e senha.",
+      "request": { "name": "Michel Cesar", "email": "produtor@exemplo.com", "password": "********" },
+      "response_example": {
+        "user": { "id": "usr_001", "name": "Michel Cesar", "email": "produtor@exemplo.com", "onboarding_completed": false },
+        "access_token": "jwt...",
+        "refresh_token": "jwt..."
+      }
+    },
+    {
+      "id": "auth_login",
+      "mvp": true,
+      "method": "POST",
+      "path": "/auth/login",
+      "description": "Login com email e senha.",
+      "request": { "email": "produtor@exemplo.com", "password": "********" },
+      "response_example": {
+        "user": { "id": "usr_001", "name": "Michel Cesar", "email": "produtor@exemplo.com", "onboarding_completed": true },
+        "access_token": "jwt...",
+        "refresh_token": "jwt..."
+      }
+    },
+    {
+      "id": "auth_google",
+      "mvp": true,
+      "method": "POST",
+      "path": "/auth/google",
+      "description": "Login com Google. O front envia o id_token do Google e o back valida.",
+      "request": { "id_token": "google-id-token..." },
+      "response_example": {
+        "user": { "id": "usr_001", "name": "Michel Cesar", "email": "produtor@gmail.com", "onboarding_completed": false },
+        "access_token": "jwt...",
+        "refresh_token": "jwt..."
+      }
+    },
+    {
+      "id": "auth_refresh",
+      "mvp": true,
+      "method": "POST",
+      "path": "/auth/refresh",
+      "description": "Renova o access_token.",
+      "request": { "refresh_token": "jwt..." },
+      "response_example": { "access_token": "jwt...", "refresh_token": "jwt..." }
+    },
+    {
+      "id": "crops_catalog",
+      "mvp": true,
+      "method": "GET",
+      "path": "/crops",
+      "description": "Catalogo de culturas para o onboarding (cartoes com icone).",
+      "response_example": {
+        "data": [
+          { "id": "milho", "name": "Milho", "icon": "corn" },
+          { "id": "tomate", "name": "Tomate", "icon": "tomato" },
+          { "id": "feijao", "name": "Feijao", "icon": "bean" },
+          { "id": "batata", "name": "Batata", "icon": "potato" }
+        ]
+      }
+    },
+    {
+      "id": "farm_create",
+      "mvp": true,
+      "method": "POST",
+      "path": "/farms",
+      "description": "Onboarding pos-login: nome da fazenda, o que produz, localizacao e extensao do territorio.",
+      "request": {
+        "name": "Fazenda Boa Terra",
+        "crops": ["milho", "tomate"],
+        "location": { "lat": -8.7167, "lng": 13.65, "province": "Bengo", "municipality": "Icolo e Bengo" },
+        "area_hectares": 12.5,
+        "boundary": null
+      },
+      "request_notes": "'boundary' e um GeoJSON Polygon opcional (desenho no mapa). Se vier null, o back usa lat/lng + area como aproximacao.",
+      "response_example": {
+        "id": "frm_001",
+        "name": "Fazenda Boa Terra",
+        "crops": ["milho", "tomate"],
+        "location": { "lat": -8.7167, "lng": 13.65, "province": "Bengo", "municipality": "Icolo e Bengo" },
+        "area_hectares": 12.5,
+        "created_at": "2026-10-13T08:00:00Z"
+      }
+    },
+    {
+      "id": "farm_list",
+      "mvp": true,
+      "method": "GET",
+      "path": "/farms",
+      "description": "Lista as fazendas do utilizador (no MVP o front usa a primeira).",
+      "response_example": { "data": [{ "id": "frm_001", "name": "Fazenda Boa Terra", "overall_status": "attention" }] }
+    },
+    {
+      "id": "farm_update",
+      "mvp": true,
+      "method": "PATCH",
+      "path": "/farms/{farm_id}",
+      "description": "Edita dados da fazenda (nome, culturas, localizacao, area).",
+      "request": { "crops": ["milho", "feijao"] },
+      "response_example": { "id": "frm_001", "crops": ["milho", "feijao"] }
+    },
+    {
+      "id": "dashboard",
+      "mvp": true,
+      "method": "GET",
+      "path": "/farms/{farm_id}/dashboard",
+      "description": "Ecra principal. Cada indicador chega JA interpretado (estado, rotulo, mensagem). O valor bruto e opcional e so aparece em 'ver detalhes'.",
+      "response_example": {
+        "generated_at": "2026-10-13T08:00:00Z",
+        "overall": {
+          "status": "attention",
+          "headline": "Solo a secar. Regue amanha cedo.",
+          "recommendation": "Regue entre as 5h e as 7h para perder menos agua."
+        },
+        "indicators": [
+          {
+            "id": "soil_moisture",
+            "title": "Humidade do solo",
+            "source": "sensor",
+            "status": "attention",
+            "label": "Abaixo da media",
+            "message": "O solo esta mais seco do que o normal para esta altura do ano.",
+            "recommendation": "Regue amanha cedo.",
+            "value": 24,
+            "unit": "%",
+            "reference": { "label": "Media desta epoca", "value": 33, "unit": "%" },
+            "trend": "down",
+            "updated_at": "2026-10-13T07:45:00Z"
+          },
+          {
+            "id": "rainfall_week",
+            "title": "Chuva da semana",
+            "source": "nasa_gpm",
+            "status": "good",
+            "label": "Dentro do normal",
+            "message": "Choveu o esperado nos ultimos 7 dias.",
+            "recommendation": null,
+            "value": 18,
+            "unit": "mm",
+            "reference": { "label": "Media de 20 anos", "value": 20, "unit": "mm" },
+            "trend": "flat",
+            "updated_at": "2026-10-13T06:00:00Z"
+          },
+          {
+            "id": "forecast",
+            "title": "Proximos dias",
+            "source": "forecast",
+            "status": "danger",
+            "label": "Chuva forte prevista",
+            "message": "Previsao de chuva forte na quinta-feira. Risco de encharcamento.",
+            "recommendation": "Nao adube antes da chuva.",
+            "value": null,
+            "unit": null,
+            "reference": null,
+            "trend": null,
+            "updated_at": "2026-10-13T06:00:00Z"
+          },
+          {
+            "id": "soil_ph",
+            "title": "pH do solo",
+            "source": "sensor",
+            "status": "good",
+            "label": "Adequado",
+            "message": "O pH esta bom para milho e tomate.",
+            "recommendation": null,
+            "value": 6.4,
+            "unit": "pH",
+            "reference": null,
+            "trend": "flat",
+            "updated_at": "2026-10-13T07:45:00Z"
+          }
+        ],
+        "data_quality": {
+          "sensors_online": true,
+          "last_sensor_reading_at": "2026-10-13T07:45:00Z",
+          "note": "Se os sensores estiverem offline, o back marca source/sensor como 'unavailable' e interpreta so com dados de satelite."
+        }
+      },
+      "indicator_ids_suggested": [
+        "soil_moisture", "soil_temperature", "soil_ph", "air_humidity",
+        "rainfall_week", "forecast", "vegetation_health"
+      ]
+    },
+    {
+      "id": "indicator_detail",
+      "mvp": false,
+      "method": "GET",
+      "path": "/farms/{farm_id}/indicators/{indicator_id}?range=7d",
+      "description": "Detalhe de um indicador ('ver detalhes'): serie temporal para grafico + comparacao com o historico.",
+      "response_example": {
+        "indicator_id": "soil_moisture",
+        "unit": "%",
+        "series": [
+          { "t": "2026-10-07T00:00:00Z", "value": 31 },
+          { "t": "2026-10-08T00:00:00Z", "value": 29 }
+        ],
+        "historical_average": [
+          { "t": "2026-10-07T00:00:00Z", "value": 33 },
+          { "t": "2026-10-08T00:00:00Z", "value": 33 }
+        ],
+        "explanation": "Texto curto a explicar o que o grafico mostra."
+      }
+    },
+    {
+      "id": "alerts_list",
+      "mvp": true,
+      "method": "GET",
+      "path": "/farms/{farm_id}/alerts?status=active|all&page=1&limit=20",
+      "description": "Alertas e alarmes (activos e historico). Alimenta o dashboard e a pagina de relatorios.",
+      "response_example": {
+        "data": [
+          {
+            "id": "alt_101",
+            "status": "danger",
+            "type": "heavy_rain",
+            "title": "Chuva forte prevista",
+            "message": "Chuva forte na quinta-feira. Proteja as culturas.",
+            "recommendation": "Nao adube antes da chuva.",
+            "created_at": "2026-10-13T06:00:00Z",
+            "resolved_at": null,
+            "read": false
+          }
+        ],
+        "page": 1,
+        "limit": 20,
+        "total": 1
+      }
+    },
+    {
+      "id": "alert_read",
+      "mvp": true,
+      "method": "PATCH",
+      "path": "/farms/{farm_id}/alerts/{alert_id}",
+      "description": "Marca alerta como lido.",
+      "request": { "read": true },
+      "response_example": { "id": "alt_101", "read": true }
+    },
+    {
+      "id": "reports_list",
+      "mvp": true,
+      "method": "GET",
+      "path": "/farms/{farm_id}/reports?type=weekly&page=1&limit=10",
+      "description": "Lista de relatorios semanais.",
+      "response_example": {
+        "data": [
+          {
+            "id": "rep_2026_41",
+            "type": "weekly",
+            "period": { "from": "2026-10-05", "to": "2026-10-11" },
+            "overall_status": "attention",
+            "headline": "Semana mais seca do que o normal"
+          }
+        ],
+        "page": 1,
+        "limit": 10,
+        "total": 1
+      }
+    },
+    {
+      "id": "report_detail",
+      "mvp": true,
+      "method": "GET",
+      "path": "/farms/{farm_id}/reports/{report_id}",
+      "description": "Relatorio semanal: desempenho meteorologico e geologico, producao, alertas e comparacao com o historico.",
+      "response_example": {
+        "id": "rep_2026_41",
+        "period": { "from": "2026-10-05", "to": "2026-10-11" },
+        "generated_at": "2026-10-12T05:00:00Z",
+        "summary": "Resumo em linguagem simples gerado pela camada de interpretacao.",
+        "weather": {
+          "rain_total_mm": 6,
+          "rain_historical_avg_mm": 20,
+          "temp_avg_c": 27.4,
+          "status": "attention",
+          "message": "Choveu menos de metade do normal."
+        },
+        "soil": {
+          "moisture_avg_pct": 26,
+          "ph_avg": 6.4,
+          "status": "attention",
+          "message": "Solo mais seco ao longo da semana."
+        },
+        "production": {
+          "notes": "Estado geral das culturas (ex.: baseado no indice de vegetacao do satelite).",
+          "crops": [
+            { "crop": "milho", "status": "good", "message": "Desenvolvimento normal." },
+            { "crop": "tomate", "status": "attention", "message": "Atencao a falta de agua." }
+          ]
+        },
+        "alerts_summary": { "danger": 1, "attention": 3, "good": 0 },
+        "recommendations": ["Regue de manha cedo.", "Evite adubar antes da chuva de quinta."]
+      },
+      "export": "Opcional (V2): GET /farms/{farm_id}/reports/{report_id}/pdf"
+    },
+    {
+      "id": "calendar",
+      "mvp": true,
+      "method": "GET",
+      "path": "/farms/{farm_id}/calendar?from=2026-10-01&to=2026-12-31",
+      "description": "Calendario inteligente por cultura: melhor momento de plantar, colher e fazer manejo, com base na NASA, sensores e culturas da fazenda.",
+      "response_example": {
+        "generated_at": "2026-10-13T08:00:00Z",
+        "events": [
+          {
+            "id": "evt_001",
+            "type": "plant",
+            "crop": "milho",
+            "title": "Melhor semana para plantar milho",
+            "start": "2026-11-15",
+            "end": "2026-11-22",
+            "risk": "low",
+            "reason": "Chuvas regulares previstas e solo com humidade adequada.",
+            "sources": ["nasa_power", "sensor", "forecast"]
+          },
+          {
+            "id": "evt_002",
+            "type": "care",
+            "crop": "tomate",
+            "title": "Verificar folhas (risco de fungo)",
+            "start": "2026-10-16",
+            "end": "2026-10-18",
+            "risk": "medium",
+            "reason": "Humidade alta e temperaturas amenas por varios dias.",
+            "sources": ["nasa_power", "sensor"]
+          }
+        ],
+        "event_types": ["plant", "harvest", "care"],
+        "risk_enum": ["low", "medium", "high"]
+      }
+    },
+    {
+      "id": "assistant_message",
+      "mvp": false,
+      "proposal": true,
+      "method": "POST",
+      "path": "/farms/{farm_id}/assistant/messages",
+      "description": "Proposta: assistente de IA (Hugging Face, via back-end) que responde a perguntas do produtor usando os dados reais da fazenda como contexto. Grupo decide se entra no MVP ou na V2.",
+      "request": { "message": "Devo regar hoje?" },
+      "response_example": {
+        "id": "msg_001",
+        "reply": "O solo esta mais seco do que o normal e nao ha chuva prevista hoje. Regue amanha entre as 5h e as 7h.",
+        "based_on": ["soil_moisture", "forecast"],
+        "created_at": "2026-10-13T08:05:00Z"
+      },
+      "notes": [
+        "O back monta o contexto (indicadores actuais, culturas, alertas) e envia ao modelo; o front so envia a pergunta.",
+        "Limitar o assistente ao tema agricola e a dados da fazenda; se nao tiver dados suficientes, dizer que nao sabe em vez de inventar.",
+        "Considerar limite de pedidos por utilizador para controlar custos e latencia.",
+        "Historico de conversa: GET /farms/{farm_id}/assistant/messages (a definir)."
+      ]
+    },
+    {
+      "id": "profile_get",
+      "mvp": true,
+      "method": "GET",
+      "path": "/users/me",
+      "description": "Perfil pessoal, ligado ao dashboard.",
+      "response_example": {
+        "id": "usr_001",
+        "name": "Michel Cesar",
+        "email": "produtor@exemplo.com",
+        "phone": null,
+        "avatar_url": null,
+        "language": "pt",
+        "notification_preferences": { "email": true, "push": false, "whatsapp": false, "sms": false },
+        "farms": [{ "id": "frm_001", "name": "Fazenda Boa Terra" }]
+      }
+    },
+    {
+      "id": "profile_update",
+      "mvp": true,
+      "method": "PATCH",
+      "path": "/users/me",
+      "description": "Edita perfil e preferencias.",
+      "request": { "name": "Michel Cesar", "phone": "+244900000000", "notification_preferences": { "email": true } },
+      "response_example": { "id": "usr_001", "name": "Michel Cesar", "phone": "+244900000000" }
+    },
+    {
+      "id": "sensors_list",
+      "mvp": false,
+      "v2": true,
+      "method": "GET",
+      "path": "/farms/{farm_id}/sensors",
+      "description": "V2: pagina de Sensores (estado de cada sensor). Fica fora do MVP do front, mas o back ja deve guardar este estado.",
+      "response_example": {
+        "data": [
+          {
+            "id": "sns_001",
+            "type": "soil_moisture",
+            "name": "Sensor Talhao A",
+            "online": true,
+            "battery_pct": 78,
+            "last_reading_at": "2026-10-13T07:45:00Z"
+          }
+        ]
+      }
+    }
+  ],
+
+  "backend_responsibilities": {
+    "ingestion": {
+      "sensors": "Receber leituras do hardware (protocolo a definir com a equipa de electronica/telecom), validar, guardar serie temporal por sensor e fazenda.",
+      "nasa": "Consultar NASA POWER, GPM, SMAP e imagens por coordenadas da fazenda, guardar em cache e historico (comparacao com ~20 anos).",
+      "forecast": "Fonte de previsao 7-15 dias a definir."
+    },
+    "interpretation": {
+      "description": "Para cada indicador: calcular estado (good/attention/danger), rotulo, mensagem e recomendacao. Recomenda-se regras deterministicas para o estado + IA so para redigir o texto em portugues simples.",
+      "cache": "Guardar o texto gerado (nao gerar a cada pedido) e regenerar quando os dados mudarem.",
+      "ai_provider": "Hugging Face (proposta). Chamada so pelo back, com fallback para mensagens-modelo."
+    },
+    "jobs": [
+      "Gerar relatorio semanal por fazenda",
+      "Recalcular calendario quando mudarem culturas ou dados",
+      "Criar alertas quando um indicador passar para attention/danger"
+    ]
+  },
+
+  "open_questions": [
+    "Fonte da previsao de 7-15 dias (as APIs da NASA citadas sao sobretudo observacoes/historico).",
+    "Como os sensores enviam dados (GSM, LoRa, WiFi) e com que frequencia.",
+    "Alertas fora da app (email, WhatsApp, SMS): quais entram no MVP?",
+    "Login por telefone na V2?",
+    "Como o back lida com sensores offline (fallback para dados de satelite)?",
+    "Autenticacao: tempo de vida dos tokens e politica de refresh.",
+    "Um utilizador pode ter varias fazendas no MVP?",
+    "IA (Hugging Face): que modelo usar? Testar a qualidade em portugues antes de decidir.",
+    "IA: limites de pedidos, custo e latencia da API no plano gratuito/pago.",
+    "IA: o assistente conversacional entra no MVP ou fica na V2?"
+  ]
+}

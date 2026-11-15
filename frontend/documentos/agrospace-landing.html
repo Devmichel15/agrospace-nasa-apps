@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgroSpace — Saiba o que fazer na sua fazenda</title>
+<meta name="description" content="O AgroSpace junta satélites da NASA e sensores no solo e diz ao agricultor, em palavras simples, quando plantar, regar ou proteger as culturas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('js')</script>
+<style>
+:root{
+  --ground:#0B3D2E; --leaf:#3FA34D; --sun:#F2A024; --sky:#1D2A3E; --soil:#8B5E3C;
+  --paper:#F1F3EC; --ink:#14201A; --mute:#55625A; --rule:#CBD3C6;
+  --display:'Bricolage Grotesque',system-ui,sans-serif; --body:'Hanken Grotesk',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font:400 1.0625rem/1.6 var(--body);color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--sun);outline-offset:3px;border-radius:4px}
+.wrap{width:min(1120px,100% - 2.5rem);margin-inline:auto}
+h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:-.02em;line-height:1.05}
+h2{font-size:clamp(1.9rem,4vw,3rem);max-width:18ch}
+.btn{display:inline-block;padding:.85rem 1.4rem;border-radius:999px;font-weight:600;text-decoration:none;transition:transform .2s,background .2s}
+.btn:hover{transform:translateY(-2px)}
+.btn-sun{background:var(--sun);color:#2a1a00}
+.btn-ghost{border:1.5px solid rgba(255,255,255,.5);color:#fff}
+.btn-ghost:hover{background:rgba(255,255,255,.12)}
+
+/* hero */
+.hero{position:relative;min-height:max(100svh,660px);display:flex;flex-direction:column;color:#fff;overflow:hidden;
+  background:linear-gradient(#141E33 0%,#2A3B5C 42%,#D9965A 74%,#F3D3A0 100%)}
+.nav{display:flex;justify-content:space-between;align-items:center;padding-block:1.4rem;position:relative;z-index:3}
+.brand{font:700 1.35rem var(--display);text-decoration:none;letter-spacing:-.02em}
+.brand b{color:#6FD07C}
+.nav a.link{font-weight:500;text-decoration:none;opacity:.9}
+.hero-copy{position:relative;z-index:3;margin-top:clamp(2rem,9vh,6rem)}
+h1{font-size:clamp(2.5rem,6.6vw,5.6rem);max-width:13ch}
+.line{overflow:hidden;padding-bottom:.08em}
+.line span{display:block}
+.js .line span{transform:translateY(108%)}
+.lede{max-width:44ch;margin-top:1.6rem;font-size:1.15rem;color:#E8EDF5}
+.cta{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:2rem}
+.fine{margin-top:1.2rem;font-size:.95rem;color:#C9D3E3}
+.art{position:absolute;inset:auto 0 0 0;height:62%;z-index:1;pointer-events:none}
+.art svg{width:100%;height:100%;display:block}
+.js #orbit{stroke-dashoffset:1}
+.chip{position:absolute;z-index:3;right:max(1.25rem,calc((100vw - 1120px)/2));bottom:19%;background:#fff;color:var(--ink);border-radius:14px;padding:.85rem 1.1rem;max-width:260px;font-size:.92rem;line-height:1.4;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+.js .chip{opacity:0}
+.chip strong{display:flex;align-items:center;gap:.5rem;font-family:var(--display);font-size:1.02rem}
+.dot{width:.7rem;height:.7rem;border-radius:50%;background:var(--sun);flex:none}
+.tag{display:inline-block;margin-top:.5rem;font-size:.72rem;font-weight:600;padding:.12rem .55rem;border-radius:999px;letter-spacing:.02em}
+.t-obs{background:#E4E8F0;color:#25314a}
+.t-prev{border:1px dashed var(--sun);background:#FFF6E2;color:#7a4b00}
+.t-sen{background:#DDF0DF;color:#175c26}
+.t-est{background:#EFE1D6;color:#6b4326}
+
+/* sections */
+section{padding-block:clamp(4rem,9vw,7.5rem)}
+.flow-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:2.5rem;margin-top:3.5rem;position:relative}
+.flow-rule{position:absolute;top:0;left:0;right:0;height:5px;border-radius:5px;background:var(--rule)}
+.flow-rule i{position:absolute;inset:0;border-radius:5px;transform-origin:left;
+  background:linear-gradient(90deg,var(--sky) 0 16.6%,var(--soil) 16.6% 33.3%,var(--sun) 33.3% 66.6%,var(--leaf) 66.6%)}
+.flow-cols article{padding-top:1.8rem}
+.flow-cols h3{font-size:1.5rem;margin-bottom:.6rem}
+.flow-cols p{color:var(--mute);max-width:34ch}
+
+.demo{background:var(--ground);color:#fff}
+.demo h2{color:#fff}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,6vw,5rem);align-items:center;margin-top:3rem}
+.demo p.lead{color:#BFD3C7;max-width:40ch;margin-top:1.2rem}
+.states{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:2rem}
+.states button{font:600 1rem var(--body);padding:.7rem 1.1rem;border-radius:999px;border:1.5px solid rgba(255,255,255,.35);background:transparent;color:#fff;cursor:pointer;display:flex;align-items:center;gap:.55rem;transition:background .2s,color .2s}
+.states button i{width:.75rem;height:.75rem;border-radius:50%;background:var(--c)}
+.states button[aria-pressed=true]{background:#fff;color:var(--ink);border-color:#fff}
+.reading{background:var(--paper);color:var(--ink);border-radius:22px;padding:1.8rem;min-height:360px;display:flex;flex-direction:column;border-top:10px solid var(--c);transition:border-color .3s}
+.reading .st{display:flex;align-items:center;gap:.6rem;font-weight:600}
+.reading .st svg{width:26px;height:26px;flex:none}
+.reading h3{font-size:1.75rem;margin:1rem 0 .5rem}
+.reading .msg{color:var(--mute)}
+.todo{margin-top:1.3rem;padding-top:1.1rem;border-top:1px solid var(--rule)}
+.todo small{display:block;font-weight:600;color:var(--mute);margin-bottom:.2rem}
+.meta{margin-top:auto;padding-top:1.3rem;display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;font-size:.88rem;color:var(--mute)}
+.meta .tag{margin:0}
+.note{margin-top:1rem;font-size:.85rem;color:#9FB8AA}
+
+.sources ul{list-style:none;padding:0;margin-top:3rem;border-top:1px solid var(--ink)}
+.sources li{display:grid;grid-template-columns:13rem 8.5rem 1fr;gap:1.2rem;align-items:baseline;padding-block:1.15rem;border-bottom:1px solid var(--rule)}
+.sources li strong{font-family:var(--display);font-size:1.15rem}
+.sources .tag{margin:0;justify-self:start}
+.sources .lim{color:var(--mute)}
+.sources .lim b{color:var(--ink);font-weight:600}
+
+.inside dl{display:grid;grid-template-columns:1fr 1fr;gap:2.2rem 4rem;margin-top:3rem}
+.inside dt{font:700 1.35rem var(--display);margin-bottom:.3rem}
+.inside dd{color:var(--mute);max-width:38ch}
+
+.end{background:var(--ground);color:#fff;text-align:left}
+.end h2{color:#fff;max-width:16ch}
+.end p{color:#BFD3C7;margin:1.2rem 0 2rem;max-width:42ch}
+footer{background:#08291F;color:#9FB8AA;font-size:.9rem;padding-block:1.6rem}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.6rem 2rem}
+
+@media(max-width:820px){
+  .flow-cols,.demo-grid,.inside dl{grid-template-columns:1fr}
+  .flow-rule{display:none}.flow-cols article{border-top:5px solid var(--c);padding-top:1.2rem}
+  .sources li{grid-template-columns:1fr;gap:.35rem}
+  .chip{position:relative;right:auto;bottom:auto;margin:2rem 1.25rem 0;align-self:flex-start;z-index:3}
+  .art{height:40%}
+  .hero{padding-bottom:4rem}
+}
+</style>
+</head>
+<body>
+
+<header class="hero" id="top">
+  <div class="art" id="art" aria-hidden="true">
+    <svg viewBox="0 0 1440 520" preserveAspectRatio="xMidYMax slice">
+      <g transform="translate(1030 250) rotate(-16)">
+        <ellipse id="orbit" rx="330" ry="74" fill="none" stroke="#F8E1B0" stroke-width="2.5" stroke-linecap="round" pathLength="1" stroke-dasharray="1" opacity=".85"/>
+      </g>
+      <g id="sun"><circle cx="1030" cy="262" r="74" fill="#F2A024"/></g>
+      <path d="M0 300 C220 250 420 300 640 270 S1040 240 1440 290 V520 H0Z" fill="#2C7A46"/>
+      <path d="M0 360 C260 320 520 370 800 340 S1220 320 1440 350 V520 H0Z" fill="#17583A"/>
+      <path d="M0 420 C300 390 640 430 960 405 S1300 395 1440 410 V520 H0Z" fill="#0B3D2E"/>
+      <g stroke="#1B6445" stroke-width="2" fill="none" opacity=".9">
+        <path d="M0 450 C300 425 640 460 960 440 S1300 430 1440 440"/>
+        <path d="M0 482 C300 458 640 492 960 472 S1300 462 1440 472"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="wrap">
+    <nav class="nav" aria-label="Principal">
+      <a class="brand" href="#top">Agro<b>Space</b></a>
+      <a class="link" href="#entrar">Entrar</a>
+    </nav>
+    <div class="hero-copy">
+      <h1>
+        <span class="line"><span>Saiba o que fazer</span></span>
+        <span class="line"><span>na sua fazenda antes</span></span>
+        <span class="line"><span>de o tempo decidir</span></span>
+        <span class="line"><span>por si.</span></span>
+      </h1>
+      <p class="lede" id="lede">O AgroSpace lê os satélites da NASA e os sensores do solo e diz-lhe, em palavras simples, quando plantar, regar ou proteger as culturas.</p>
+      <div class="cta" id="cta">
+        <a class="btn btn-sun" href="#entrar">Criar conta</a>
+        <a class="btn btn-ghost" href="#resposta">Ver uma resposta</a>
+      </div>
+      <p class="fine">Funciona sem sensores. Comece só com a localização da fazenda.</p>
+    </div>
+  </div>
+
+  <div class="chip" id="chip" role="note">
+    <strong><span class="dot"></span>Atenção · Fazenda Boa Terra</strong>
+    Solo seco e chuva forte na quinta. Não adube antes da chuva.
+    <span class="tag t-prev">Previsão</span>
+  </div>
+</header>
+
+<main>
+<section id="como">
+  <div class="wrap">
+    <h2>Do céu e da terra à decisão.</h2>
+    <div class="flow-cols" id="flow">
+      <div class="flow-rule" aria-hidden="true"><i id="rule"></i></div>
+      <article style="--c:var(--soil)">
+        <h3>O que se mede</h3>
+        <p>Satélites da NASA, a previsão do tempo e, se tiver, sensores no solo registam o que acontece na sua região e na sua terra.</p>
+      </article>
+      <article style="--c:var(--sun)">
+        <h3>O que significa</h3>
+        <p>Regras agronómicas transformam as medições num estado: verde, amarelo, vermelho ou cinzento quando faltam dados.</p>
+      </article>
+      <article style="--c:var(--leaf)">
+        <h3>O que fazer</h3>
+        <p>Recebe uma mensagem curta e a recomendação. O número bruto fica à distância de um toque, em «ver detalhes».</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="demo" id="resposta">
+  <div class="wrap">
+    <h2>Uma resposta, não uma tabela de números.</h2>
+    <div class="demo-grid">
+      <div>
+        <p class="lead">Escolha uma situação e veja o que o agricultor lê no ecrã. Cada resposta diz de onde vem e quão segura é.</p>
+        <div class="states" id="states" role="group" aria-label="Situações de exemplo"></div>
+        <p class="note">Exemplo com dados fictícios.</p>
+      </div>
+      <div class="reading" id="reading" aria-live="polite">
+        <div id="rbody" style="display:flex;flex-direction:column;flex:1"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sources">
+  <div class="wrap">
+    <h2>De onde vem cada dado e o que ele não diz.</h2>
+    <ul>
+      <li><strong>NASA POWER</strong><span class="tag t-obs">Observado</span><span class="lim">Temperatura e clima diários, com histórico. <b>Não é previsão.</b></span></li>
+      <li><strong>NASA GPM IMERG</strong><span class="tag t-obs">Observado</span><span class="lim">Estimativa de chuva por satélite. <b>Resolução regional: não mede a sua parcela.</b></span></li>
+      <li><strong>NASA SMAP</strong><span class="tag t-obs">Observado</span><span class="lim">Humidade do solo na região. <b>Não mostra a zona das raízes.</b></span></li>
+      <li><strong>Open-Meteo</strong><span class="tag t-prev">Previsão</span><span class="lim">Próximos 7 dias, fonte externa à NASA. <b>A incerteza cresce com os dias.</b></span></li>
+      <li><strong>SoilGrids</strong><span class="tag t-est">Estimado</span><span class="lim">pH, textura e matéria orgânica do solo. <b>Não substitui análise de laboratório.</b></span></li>
+      <li><strong>Sensores da fazenda</strong><span class="tag t-sen">Sensor</span><span class="lim">Humidade, temperatura e pH medidos no local. <b>Indicador relativo até ser calibrado.</b></span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="inside">
+  <div class="wrap">
+    <h2>O que encontra lá dentro.</h2>
+    <dl>
+      <div><dt>Início</dt><dd>Um semáforo geral da fazenda e os indicadores já interpretados, com a recomendação do dia.</dd></div>
+      <div><dt>Culturas</dt><dd>Compare até três culturas para a sua fazenda, com factores favoráveis, riscos e limitações. Sem dados, sem veredicto.</dd></div>
+      <div><dt>Calendário</dt><dd>As melhores janelas de plantio, colheita e manejo, sempre com o porquê.</dd></div>
+      <div><dt>Relatórios e alertas</dt><dd>Um relatório semanal em linguagem simples e o histórico de alertas da fazenda.</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section class="end" id="entrar">
+  <div class="wrap">
+    <h2>Comece pela localização da fazenda.</h2>
+    <p>Crie a conta, diga o que planta e onde fica a terra. O resto é com os satélites.</p>
+    <a class="btn btn-sun" href="#">Criar conta</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>AgroSpace · Desenvolvido para o NASA Space Apps Challenge 2026</span>
+    <span>As pontuações são indicativas e não substituem um agrónomo.</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/motion@11.11.13/dist/motion.js"></script>
+<script>
+const { animate, scroll, stagger } = Motion;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- demo ---------- */
+const ICON = {
+  ok:'<svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="12" fill="#3FA34D"/><path d="M7.5 13.5l4 4 7-8" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  warn:'<svg viewBox="0 0 26 26"><path d="M13 2l12 21H1z" fill="#F2A024" stroke="#F2A024" stroke-width="2" stroke-linejoin="round"/><path d="M13 10v6M13 19v.5" stroke="#2a1a00" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  bad:'<svg viewBox="0 0 26 26"><path d="M8 1h10l7 7v10l-7 7H8l-7-7V8z" fill="#D64545"/><path d="M13 7v8M13 18.5v.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>',
+  none:'<svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="12" fill="#98A2A8"/><path d="M8 13h10" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/></svg>'
+};
+const tag = {obs:'<span class="tag t-obs">Observado</span>',prev:'<span class="tag t-prev">Previsão</span>',sen:'<span class="tag t-sen">Sensor</span>'};
+const S = {
+  ok:{label:'Tudo bem',c:'#3FA34D',icon:'ok',state:'Tudo bem',title:'Milho: chuva adequada para o ciclo.',msg:'A chuva da semana ficou dentro do normal e o solo está húmido.',todo:'Siga o plano. A próxima janela de plantio é de 15 a 22 de novembro.',tags:tag.obs,conf:'Confiança alta'},
+  warn:{label:'Atenção',c:'#F2A024',icon:'warn',state:'Atenção',title:'O solo está mais seco do que o normal.',msg:'Está a secar há 5 dias, abaixo da média da sua fazenda.',todo:'Espere pela chuva de quinta antes de decidir regar.',tags:tag.sen+tag.prev,conf:'Confiança média'},
+  bad:{label:'Perigo',c:'#D64545',icon:'bad',state:'Perigo',title:'Chuva forte prevista para quinta-feira.',msg:'Cerca de 38 mm em 24 horas. Risco de encharcamento nas culturas.',todo:'Não adube antes da chuva e verifique a drenagem do terreno.',tags:tag.prev,conf:'Confiança média'},
+  none:{label:'Sem dados',c:'#98A2A8',icon:'none',state:'Sem dados',title:'Ainda não podemos recomendar o feijão.',msg:'Faltam dados de solo (pH e textura). Preferimos não adivinhar.',todo:'Adicione os resultados da análise de solo, ou use as estimativas de satélite.',tags:'',conf:'Sem veredicto'}
+};
+const states = document.getElementById('states'), reading = document.getElementById('reading'), rbody = document.getElementById('rbody');
+Object.entries(S).forEach(([k,v])=>{
+  const b = document.createElement('button');
+  b.type='button'; b.dataset.k=k; b.style.setProperty('--c',v.c);
+  b.innerHTML='<i></i>'+v.label; states.appendChild(b);
+});
+function show(k, first){
+  const v = S[k];
+  states.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.k===k));
+  reading.style.setProperty('--c', v.c);
+  rbody.innerHTML = `<div class="st">${ICON[v.icon]}${v.state}</div><h3>${v.title}</h3><p class="msg">${v.msg}</p>
+    <div class="todo"><small>O que fazer</small>${v.todo}</div>
+    <div class="meta">${v.tags}<span>${v.conf}</span></div>`;
+  if(!reduce && !first) animate(rbody.children, {opacity:[0,1], transform:['translateY(8px)','translateY(0)']}, {duration:.4, delay:stagger(.06)});
+}
+states.addEventListener('click', e=>{ const b=e.target.closest('button'); if(b) show(b.dataset.k); });
+show('warn', true);
+
+/* ---------- movimento ---------- */
+if(!reduce){
+  // abertura: o sol sobe, a órbita desenha-se, o título entra linha a linha
+  animate('#sun', {transform:['translateY(150px)','translateY(0px)']}, {duration:2.6, ease:[.22,1,.36,1]});
+  animate('#orbit', {strokeDashoffset:[1,0]}, {duration:2.2, delay:.5, ease:'easeInOut'});
+  animate('.line span', {transform:['translateY(108%)','translateY(0%)']}, {duration:.9, delay:stagger(.11,{startDelay:.3}), ease:[.22,1,.36,1]});
+  animate('#lede, #cta, .fine', {opacity:[0,1]}, {duration:.8, delay:stagger(.12,{startDelay:1.1})});
+  animate('#chip', {opacity:[0,1], transform:['translateY(14px)','translateY(0px)']}, {duration:.7, delay:2.2});
+
+  // o céu desce ligeiramente ao fazer scroll
+  scroll(animate('#art', {transform:['translateY(0px)','translateY(70px)']}), {target:document.querySelector('.hero'), offset:['start start','end start']});
+
+  // a linha do fluxo preenche-se com o scroll
+  scroll(animate('#rule', {transform:['scaleX(0)','scaleX(1)']}), {target:document.getElementById('flow'), offset:['start 80%','end 70%']});
+}
+</script>
+</body>
+</html>
